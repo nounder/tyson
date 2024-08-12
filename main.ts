@@ -5,8 +5,6 @@ const randomString = (length = 12) =>
 
 type Obj = Record<string, any>
 
-const Source = Symbol("Source")
-
 const isPlainObject = (x: any) => typeof x === "object" && x !== null && !Array.isArray(x)
 
 const serializeValue = (value: any) => {
@@ -24,10 +22,10 @@ const serializeValue = (value: any) => {
 const serializeObject = (source: object) => {
 	const dstRoot = {}
 	const objectIds = new Map<object, string | null>()
-	const wrappedRefs = new Set<{ [Source]: object }>()
+	const defs = {} as Record<string, Obj>
 	let refCount = 0
 
-	const traverseObject = (src: Obj, dst: Obj) => {
+	const scanObject = (src: Obj) => {
 		const objectId = objectIds.get(src)
 
 		if (objectId) {
@@ -40,41 +38,40 @@ const serializeObject = (source: object) => {
 			return
 		}
 
+		for (const v of Object.values(src)) {
+			if (isPlainObject(v)) {
+				scanObject(v)
+			}
+		}
+	}
+
+	const mapObject = (src: Obj, dst: Obj) => {
 		for (const [k, v] of Object.entries(src)) {
 			if (isPlainObject(v)) {
-				const wrappedRef = { [Source]: v }
+				const objectId = objectIds.get(v)
 
-				dst[k] = wrappedRef
+				if (objectId) {
+					if (!defs[objectId]) {
+						defs[objectId] = v
+					}
 
-				wrappedRefs.add(wrappedRef)
+					dst[k] = { $ref: objectId }
 
-				traverseObject(v, wrappedRef)
+					mapObject(v, defs[objectId])
+				} else {
+					dst[k] = {}
+
+					mapObject(v, dst[k])
+				}
+			} else {
+				dst[k] = serializeValue(v)
 			}
 		}
 	}
 
-	traverseObject(source, dstRoot)
+	scanObject(source)
 
-	const defs = {} as Record<string, { [Source]: object }>
-
-	for (const wrappedRef of wrappedRefs) {
-		const source = wrappedRef[Source]
-		const {
-			[Source]: _,
-			...plainProperties
-		} = wrappedRef
-		const objectId = objectIds.get(source)
-
-		if (objectId) {
-			if (!defs[objectId]) {
-				defs[objectId] = plainProperties
-			}
-
-			wrappedRef.$ref = objectId
-		}
-
-		delete wrappedRef[Source]
-	}
+	mapObject(source, dstRoot)
 
 	dstRoot["$defs"] = defs
 
