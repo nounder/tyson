@@ -19,7 +19,7 @@ export default {
 
 	Number: {
 		test(x) {
-			return Number.isFinite(x)
+			return Number.isFinite(x) && !Object.is(x, -0)
 		},
 		replace: String,
 		revive: String,

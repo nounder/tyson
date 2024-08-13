@@ -33,7 +33,11 @@ export function toJSONType(value): JSONTypes | undefined {
 		return type
 	}
 
-	if (type === "number" && Number.isFinite(value)) {
+	if (
+		type === "number"
+		&& Number.isFinite(value)
+		&& !Object.is(value, -0)
+	) {
 		return "number"
 	}
 
