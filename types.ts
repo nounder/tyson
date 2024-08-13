@@ -47,24 +47,16 @@ export default {
 			message,
 			cause,
 			stack,
-			fileName,
-			lineNumber,
-			columnNumber,
 		}) {
 			return {
 				name,
 				message,
-				cause,
 				stack,
-				fileName,
-				lineNumber,
-				columnNumber,
 			}
 		},
 		revive(obj) {
 			const e = new Error(obj.message)
 			e.name = obj.name
-			e.cause = obj.cause
 			e.stack = obj.stack
 
 			return e
