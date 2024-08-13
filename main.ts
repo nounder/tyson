@@ -8,7 +8,7 @@ type JSObject = Record<string, any>
 
 type ObjectIds = WeakMap<object, string | null>
 
-const wrapValue = (value: any) => {
+export const serializeValue = (value: any) => {
 	const jsonType = toJSONType(value)
 
 	if (jsonType) {
@@ -82,7 +82,7 @@ const refObject = (src: JSObject, dst: JSObject, objectIds?: ObjectIds) => {
 				refObject(v, dst[k], objectIds)
 			}
 		} else {
-			dst[k] = wrapValue(v)
+			dst[k] = serializeValue(v)
 		}
 	}
 
@@ -95,7 +95,9 @@ export const serializeObject = (source: object) => {
 	const objectIds = scanObject(source)
 	const defs = refObject(source, dstRoot, objectIds)
 
-	dstRoot["$defs"] = defs
+	if (Object.keys(defs).length > 0) {
+		dstRoot["$defs"] = defs
+	}
 
 	return dstRoot
 }
