@@ -1,14 +1,10 @@
 {
-	"tasks": {
-		"start": "deno run -A main.ts",
-		"dev": "deno run -A --watch main.ts"
-	},
-	"fmt": {
-		"useTabs": true,
-		"semiColons": false
-	},
-	"compilerOptions": {
-		"allowJs": true,
-		"noImplicitAny": false
-	}
+  "tasks": {
+    "start": "deno run -A main.ts",
+    "dev": "deno run -A --watch main.ts"
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "noImplicitAny": false
+  }
 }
