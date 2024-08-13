@@ -1,77 +1,99 @@
-const randomString = (length = 12) =>
-	[...crypto.getRandomValues(new Uint8Array(length))]
-		.map((x) => (x % 36).toString(36))
-		.join("")
+import Types from "./types.ts"
+import { isPlainObject, isPrimitive, toJSONType, toStringTag } from "./utils.ts"
 
-type Obj = Record<string, any>
+type JSON = Primitive | Primitive[] | { [key: string]: JSON }
+type Primitive = null | boolean | number | string
 
-const isPlainObject = (x: any) => typeof x === "object" && x !== null && !Array.isArray(x)
+type JSObject = Record<string, any>
 
-const serializeValue = (value: any) => {
-	const t = typeof value
+type ObjectIds = WeakMap<object, string | null>
 
-	if (t === "undefined") {
-		return {
-			$type: "undefined",
-		}
-	} else {
+const wrapValue = (value: any) => {
+	const jsonType = toJSONType(value)
+
+	if (jsonType) {
 		return value
 	}
-}
 
-const serializeObject = (source: object) => {
-	const dstRoot = {}
-	const objectIds = new Map<object, string | null>()
-	const defs = {} as Record<string, Obj>
-	let refCount = 0
+	for (const [tag, spec] of Object.entries(Types)) {
+		if (spec.test(value)) {
+			const replacedValue = spec.replace(value)
 
-	const scanObject = (src: Obj) => {
-		const objectId = objectIds.get(src)
-
-		if (objectId) {
-			return
-		} else if (objectId === undefined) {
-			objectIds.set(src, null)
-		} else if (objectId === null) {
-			objectIds.set(src, "*" + (++refCount))
-
-			return
-		}
-
-		for (const v of Object.values(src)) {
-			if (isPlainObject(v)) {
-				scanObject(v)
-			}
-		}
-	}
-
-	const mapObject = (src: Obj, dst: Obj) => {
-		for (const [k, v] of Object.entries(src)) {
-			if (isPlainObject(v)) {
-				const objectId = objectIds.get(v)
-
-				if (objectId) {
-					if (!defs[objectId]) {
-						defs[objectId] = v
-					}
-
-					dst[k] = { $ref: objectId }
-
-					mapObject(v, defs[objectId])
-				} else {
-					dst[k] = {}
-
-					mapObject(v, dst[k])
+			if (replacedValue) {
+				return {
+					$type: tag,
+					value: replacedValue,
 				}
 			} else {
-				dst[k] = serializeValue(v)
+				return {
+					$type: tag,
+				}
 			}
 		}
 	}
 
-	scanObject(source)
+	throw new Error(`Unsupported type: ${type}`)
+}
 
-	mapObject(source, dstRoot)
+const scanObject = (src: JSObject, objectIds: ObjectIds) => {
+	if (!objectIds) {
+		objectIds = new WeakMap()
+	}
+	const objectId = objectIds.get(src)
+	let refCount = 0
+
+	if (objectId) {
+		return
+	} else if (objectId === undefined) {
+		objectIds.set(src, null)
+	} else if (objectId === null) {
+		objectIds.set(src, "*" + (++refCount))
+
+		return
+	}
+
+	for (const v of Object.values(src)) {
+		if (isPlainObject(v)) {
+			scanObject(v, objectIds)
+		}
+	}
+
+	return objectIds
+}
+
+const refObject = (src: JSObject, dst: JSObject, objectIds?: ObjectIds) => {
+	const defs = {} as Record<string, JSObject>
+
+	for (const [k, v] of Object.entries(src)) {
+		if (isPlainObject(v)) {
+			const objectId = objectIds?.get(v)
+
+			if (objectId) {
+				if (!defs[objectId]) {
+					defs[objectId] = v
+				}
+
+				dst[k] = { $ref: objectId }
+
+				refObject(v, defs[objectId], objectIds)
+			} else {
+				dst[k] = {}
+
+				refObject(v, dst[k], objectIds)
+			}
+		} else {
+			dst[k] = wrapValue(v)
+		}
+	}
+
+	return defs
+}
+
+export const serializeObject = (source: object) => {
+	const dstRoot = {}
+
+	const objectIds = scanObject(source)
+	const defs = refObject(source, dstRoot, objectIds)
 
 	dstRoot["$defs"] = defs
 
@@ -83,7 +105,10 @@ if (import.meta.main) {
 	const nested = { repeated }
 	repeated.nested = nested
 	const ser = serializeObject({
+		oops: null,
 		repeated,
+		big: 100n,
+		bigobj: Object(BigInt(23)),
 		// settings: {
 		// 	theme: "dark",
 		// 	repeated,
