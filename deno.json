@@ -6,5 +6,9 @@
 	"fmt": {
 		"useTabs": true,
 		"semiColons": false
+	},
+	"compilerOptions": {
+		"allowJs": true,
+		"noImplicitAny": false
 	}
 }
