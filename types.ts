@@ -1,30 +1,6 @@
 import { isPlainObject, toStringTag } from "./utils.ts"
 
 export default {
-	Boolean: {
-		test(x) {
-			return typeof x === "boolean"
-		},
-		replace: Boolean,
-		revive: Boolean,
-	},
-
-	String: {
-		test(x) {
-			return typeof x === "string"
-		},
-		replace: String,
-		revive: String,
-	},
-
-	Number: {
-		test(x) {
-			return Number.isFinite(x) && !Object.is(x, -0)
-		},
-		replace: String,
-		revive: String,
-	},
-
 	Undefined: {
 		test(x) {
 			return x === undefined
