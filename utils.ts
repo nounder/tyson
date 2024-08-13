@@ -28,10 +28,13 @@ export function toJSONType(value): JSONTypes | undefined {
 
 	if (
 		type === "boolean"
-		|| type === "number"
 		|| type === "string"
 	) {
 		return type
+	}
+
+	if (type === "number" && Number.isFinite(value)) {
+		return "number"
 	}
 
 	if (type === "object") {
