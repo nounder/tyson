@@ -1,4 +1,4 @@
-import { isPlainObject, toStringTag } from "./utils.ts"
+import { toStringTag } from "./utils.ts"
 
 export default {
 	Undefined: {
@@ -137,7 +137,7 @@ export default {
 
 		replace(rexp) {
 			return {
-				pattern: rexp.pattern,
+				source: rexp.source,
 				flags: (rexp.global ? "g" : "")
 					+ (rexp.ignoreCase ? "i" : "")
 					+ (rexp.multiline ? "m" : "")
@@ -146,8 +146,8 @@ export default {
 			}
 		},
 
-		revive({ pattern, flags }) {
-			return new RegExp(pattern, flags)
+		revive({ source, flags }) {
+			return new RegExp(source, flags)
 		},
 	},
 
