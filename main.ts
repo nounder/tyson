@@ -32,10 +32,10 @@ const wrapValue = (value: any) => {
 		}
 	}
 
-	throw new Error(`Unsupported type: ${type}`)
+	throw new Error(`Cannot serialize value: ${value}`)
 }
 
-const scanObject = (src: JSObject, objectIds: ObjectIds) => {
+const scanObject = (src: JSObject, objectIds?: ObjectIds) => {
 	if (!objectIds) {
 		objectIds = new WeakMap()
 	}
@@ -103,7 +103,7 @@ export const serializeObject = (source: object) => {
 if (import.meta.main) {
 	const repeated = { _: "repeated" }
 	const nested = { repeated }
-	repeated.nested = nested
+	repeated["nested"] = nested
 	const ser = serializeObject({
 		oops: null,
 		repeated,

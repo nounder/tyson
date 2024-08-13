@@ -63,11 +63,9 @@ export function toStringTag(value) {
 
 export function getEnumerableSymbols(object: Record<string | symbol, any>) {
 	return Object.getOwnPropertySymbols(object).filter(
-		(symbol) => Object.getOwnPropertyDescriptor(object, symbol).enumerable,
+		(symbol) => Object.getOwnPropertyDescriptor(object, symbol)!.enumerable,
 	)
 }
-
-const z: Record<string, any> = null
 
 export function isPlainObject(value) {
 	if (value === null || typeof value !== "object") {
