@@ -1,8 +1,4 @@
 {
-  "tasks": {
-    "start": "deno run -A main.ts",
-    "dev": "deno run -A --watch main.ts"
-  },
   "compilerOptions": {
     "allowJs": true,
     "noImplicitAny": false

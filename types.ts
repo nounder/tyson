@@ -5,8 +5,8 @@ export default {
     test(x) {
       return x === undefined;
     },
-    replace: () => null,
-    revive: () => null,
+    replace: () => undefined,
+    revive: () => undefined,
   },
 
   BigInt: {
@@ -14,27 +14,27 @@ export default {
       return typeof x === "bigint";
     },
     replace: String,
-    revive(s: string) {
-      return BigInt(s);
-    },
+    revive: BigInt,
   },
 
   Date: {
     test(x) {
       return toStringTag(x) === "Date";
     },
-    replace(dt) {
-      const time = dt.getTime();
+    replace(x) {
+      const time = x.getTime();
+
       if (Number.isNaN(time)) {
         return "NaN";
       }
+
       return time;
     },
-    revive(time) {
-      if (time === "NaN") {
+    revive(x) {
+      if (x === "NaN") {
         return new Date(Number.NaN);
       }
-      return new Date(time);
+      return new Date(x);
     },
   },
 
@@ -45,7 +45,6 @@ export default {
     replace({
       name,
       message,
-      cause,
       stack,
     }) {
       return {
@@ -70,8 +69,8 @@ export default {
         typeof x.valueOf() === "bigint";
     },
     replace: String,
-    revive(s) {
-      return new Object(BigInt(/** @type {string} */ (s)));
+    revive(x) {
+      return new Object(BigInt(/** @type {string} */ (x)));
     },
   },
 
@@ -81,8 +80,8 @@ export default {
       return toStringTag(x) === "String" && typeof x === "object";
     },
     replace: String,
-    revive(s) {
-      return new String(s);
+    revive(x) {
+      return new String(x);
     }, // Revive to an objectified string
   },
 
@@ -93,9 +92,9 @@ export default {
         typeof x === "object";
     },
     replace: Boolean,
-    revive(b) {
+    revive(x) {
       // Revive to an objectified Boolean
-      return new Boolean(b);
+      return new Boolean(x);
     },
   },
 
@@ -110,15 +109,27 @@ export default {
     }, // Revive to an objectified number
   },
 
+  Map: {
+    test(x) {
+      return toStringTag(x) === "Map";
+    },
+    replace(x) {
+      return [...x.entries()];
+    },
+    revive(x) {
+      return new Map(x);
+    },
+  },
+
   Set: {
     test(x) {
       return toStringTag(x) === "Set";
     },
-    replace(st) {
-      return [...st.values()];
+    replace(x) {
+      return [...x.values()];
     },
-    revive(values) {
-      return new Set(values);
+    revive(x) {
+      return new Set(x);
     },
   },
 
@@ -147,11 +158,11 @@ export default {
     test(x) {
       return Object.is(x, -0);
     },
-    replace(/* n */) {
+    replace() {
       // Just adding 0 here for minimized space; will still revive as -0
-      return null;
+      return undefined;
     },
-    revive(/* s */) {
+    revive() {
       return -0;
     },
   },
@@ -160,10 +171,10 @@ export default {
     test(x) {
       return x === Number.POSITIVE_INFINITY;
     },
-    replace(/* n */) {
-      return null;
+    replace() {
+      return undefined;
     },
-    revive(/* s */) {
+    revive() {
       return Number.POSITIVE_INFINITY;
     },
   },
@@ -172,10 +183,10 @@ export default {
     test(x) {
       return x === Number.NEGATIVE_INFINITY;
     },
-    replace(/* n */) {
-      return null;
+    replace() {
+      return undefined;
     },
-    revive(/* s */) {
+    revive() {
       return Number.NEGATIVE_INFINITY;
     },
   },
@@ -184,23 +195,17 @@ export default {
     test(x) {
       return Number.isNaN(x);
     },
-    replace(/* n */) {
-      return null;
+    replace() {
+      return undefined;
     },
-    revive(/* s */) {
+    revive() {
       return Number.NaN;
     },
   },
-
-  Map: {
-    test(x) {
-      return toStringTag(x) === "Map";
-    },
-    replace(mp) {
-      return [...mp.entries()];
-    },
-    revive(entries) {
-      return new Map(entries);
-    },
-  },
+} as {
+  [tag: string]: {
+    test: (x: any) => boolean;
+    replace: (x: any) => any | undefined;
+    revive: (x: any) => any | undefined;
+  };
 };

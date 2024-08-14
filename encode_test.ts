@@ -1,91 +1,86 @@
-import {
-  assert,
-  assertEquals,
-  assertMatch,
-  assertObjectMatch,
-} from "jsr:@std/assert";
-import { serializeObject, serializeValue } from "./main.ts";
+import { assert, assertEquals, assertObjectMatch } from "jsr:@std/assert";
+import { encodeObject, encodeValue } from "./encode.ts";
 
 Deno.test("serialize Boolean primitive", () => {
   assertEquals(
-    serializeValue(true),
+    encodeValue(true),
     true,
   );
 });
 
 Deno.test("serialize Boolean object", () => {
   assertEquals(
-    serializeValue(Object(true)),
+    encodeValue(Object(true)),
     { $type: "BooleanObject", value: true },
   );
 });
 
 Deno.test("serialize String primitive", () => {
   assertEquals(
-    serializeValue("string"),
+    encodeValue("string"),
     "string",
   );
 });
 
 Deno.test("serialize String object", () => {
   assertEquals(
-    serializeValue(Object("string")),
+    encodeValue(Object("string")),
     { $type: "StringObject", value: "string" },
   );
 });
 
 Deno.test("serialize Number primitive", () => {
   assertEquals(
-    serializeValue(42),
+    encodeValue(42),
     42,
   );
 });
 
 Deno.test("serialize Number object", () => {
   assertEquals(
-    serializeValue(Object(42)),
+    encodeValue(Object(42)),
     { $type: "NumberObject", value: 42 },
   );
 });
 
 Deno.test("serialize NaN", () => {
   assertEquals(
-    serializeValue(NaN),
+    encodeValue(NaN),
     { $type: "NaN" },
   );
 });
 
 Deno.test("serialize Infinity", () => {
   assertEquals(
-    serializeValue(Infinity),
+    encodeValue(Infinity),
     { $type: "Infinity" },
   );
 });
 
 Deno.test("serialize -Infinity", () => {
   assertEquals(
-    serializeValue(-Infinity),
+    encodeValue(-Infinity),
     { $type: "NegativeInfinity" },
   );
 });
 
 Deno.test("serialize -0", () => {
   assertEquals(
-    serializeValue(-0),
+    encodeValue(-0),
     { $type: "NegativeZero" },
   );
 });
 
 Deno.test("serialize BigInt", () => {
   assertEquals(
-    serializeValue(BigInt(9007199254740991)),
+    encodeValue(BigInt(9007199254740991)),
     { $type: "BigInt", value: "9007199254740991" },
   );
 });
 
 Deno.test("serialize BigInt object", () => {
   assertEquals(
-    serializeValue(Object(BigInt(9007199254740991))),
+    encodeValue(Object(BigInt(9007199254740991))),
     { $type: "BigIntObject", value: "9007199254740991" },
   );
 });
@@ -93,7 +88,7 @@ Deno.test("serialize BigInt object", () => {
 Deno.test("serialize Date", () => {
   const date = new Date("2023-05-20T12:00:00Z");
   assertEquals(
-    serializeValue(date),
+    encodeValue(date),
     { $type: "Date", value: date.getTime() },
   );
 });
@@ -101,14 +96,14 @@ Deno.test("serialize Date", () => {
 Deno.test("serialize Invalid Date", () => {
   const invalidDate = new Date("Invalid Date");
   assertEquals(
-    serializeValue(invalidDate),
+    encodeValue(invalidDate),
     { $type: "Date", value: "NaN" },
   );
 });
 
 Deno.test("serialize Error", () => {
   const error = new Error("Test error");
-  const serialized = serializeValue(error);
+  const serialized = encodeValue(error);
 
   assertObjectMatch(serialized, {
     $type: "Error",
@@ -123,14 +118,14 @@ Deno.test("serialize Error", () => {
 
 Deno.test("serialize String object", () => {
   assertEquals(
-    serializeValue(Object("test")),
+    encodeValue(Object("test")),
     { $type: "StringObject", value: "test" },
   );
 });
 
 Deno.test("serialize Boolean object", () => {
   assertEquals(
-    serializeValue(Object(true)),
+    encodeValue(Object(true)),
     { $type: "BooleanObject", value: true },
   );
 });
@@ -138,7 +133,7 @@ Deno.test("serialize Boolean object", () => {
 Deno.test("serialize Set", () => {
   const set = new Set([1, 2, 3]);
   assertEquals(
-    serializeValue(set),
+    encodeValue(set),
     { $type: "Set", value: [1, 2, 3] },
   );
 });
@@ -146,7 +141,7 @@ Deno.test("serialize Set", () => {
 Deno.test("serialize RegExp", () => {
   const regex = /test/gi;
   assertEquals(
-    serializeValue(regex),
+    encodeValue(regex),
     { $type: "RegExp", value: { source: "test", flags: "gi" } },
   );
 });
@@ -154,14 +149,14 @@ Deno.test("serialize RegExp", () => {
 Deno.test("serialize Map", () => {
   const map = new Map([["key1", "value1"], ["key2", "value2"]]);
   assertEquals(
-    serializeValue(map),
+    encodeValue(map),
     { $type: "Map", value: [["key1", "value1"], ["key2", "value2"]] },
   );
 });
 
 Deno.test("serialize undefined", () => {
   assertEquals(
-    serializeValue(undefined),
+    encodeValue(undefined),
     { $type: "Undefined" },
   );
 });
@@ -173,7 +168,7 @@ Deno.test("serialize literals in object", () => {
     number: 1,
     string: "2",
   };
-  const serialized = serializeObject(value);
+  const serialized = encodeObject(value);
 
   assertEquals(serialized, value);
 });
@@ -182,7 +177,7 @@ Deno.test("serialize flat array in object", () => {
   const value = {
     list: [1, 2, 3],
   };
-  const serialized = serializeObject(value);
+  const serialized = encodeObject(value);
 
   assertEquals(serialized, value);
 });
@@ -191,7 +186,7 @@ Deno.test("serialize nested array in object", () => {
   const value = {
     list: [1, [2, 3], [4, 5, 6]],
   };
-  const serialized = serializeObject(value);
+  const serialized = encodeObject(value);
 
   assertEquals(serialized, value);
 });
@@ -203,7 +198,7 @@ Deno.test("serialize nested object", () => {
       bindings: "vim",
     },
   };
-  const serialized = serializeObject(value);
+  const serialized = encodeObject(value);
 
   assertEquals(serialized, value);
 });
@@ -216,7 +211,7 @@ Deno.test("serialize circular object", () => {
     owner: joe,
     creator: joe,
   };
-  const serialized = serializeObject(value);
+  const serialized = encodeObject(value);
 
   assertEquals(serialized, {
     "$defs": {
