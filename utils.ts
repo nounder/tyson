@@ -74,7 +74,9 @@ export function getEnumerableSymbols(object: Record<string | symbol, any>) {
   );
 }
 
-export function isPlainObject(value) {
+export function isPlainObject(
+  value: unknown,
+): value is Record<string, unknown> {
   if (value === null || typeof value !== "object") {
     return false;
   }
@@ -88,6 +90,8 @@ export function isPlainObject(value) {
   );
 }
 
-export function isPrimitive(thing) {
+export function isPrimitive(
+  thing: unknown,
+): thing is string | number | boolean | null | undefined {
   return Object(thing) !== thing;
 }

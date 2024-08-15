@@ -1,11 +1,37 @@
 import Types from "./types.ts";
 import { isPlainObject } from "./utils.ts";
 
-type JSObject = Record<string, any>;
+type JsonPrimitive = null | boolean | number | string;
+type JsonValue = JsonPrimitive | JsonPrimitive[] | JsonObject;
+type JsonObject = { [key: string]: JsonValue };
 
-export function decodeValue(value) {
-  if ("$type" in value) {
-    const typeSpec = Types[value.$type];
+type RefObject = { $ref: string };
+type TypedObject = { $type: string };
+
+type EncodedJsonObject =
+  | JsonObject
+  | TypedObject
+  | RefObject;
+
+// cannot have ref
+type EncodedDefinition =
+  | JsonObject
+  | (JsonObject & { $type: string });
+
+type EncodedDefinitionMap = Record<string, EncodedDefinition>;
+
+// root object that may contain definitions
+type EncodedDocument =
+  | JsonObject
+  | (JsonObject & { $defs: EncodedDefinitionMap });
+
+export function decodeValue(value: EncodedJsonObject) {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "$type" in value
+  ) {
+    const typeSpec = Types[value.$type as string];
 
     if (typeSpec) {
       const decodedValue = typeSpec.revive(value);
@@ -22,12 +48,12 @@ export function decodeValue(value) {
 }
 
 function derefObject(
-  target: JSObject,
-  defs: Record<string, JSObject>,
+  target: EncodedJsonObject,
+  defs: EncodedDefinitionMap,
 ) {
   for (const [k, v] of Object.entries(target)) {
     if (isPlainObject(v)) {
-      const { $ref } = v;
+      const $ref = v["$ref"] as string;
 
       if ($ref !== undefined) {
         const refObj = defs[$ref];
