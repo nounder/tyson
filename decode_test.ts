@@ -10,7 +10,7 @@ Deno.test("deserialize Boolean primitive", () => {
 
 Deno.test("deserialize Boolean object", () => {
   assertEquals(
-    decodeValue({ $type: "BooleanObject", value: true }),
+    decodeValue({ $type: "BooleanObject", $: true }),
     Object(true),
   );
 });
@@ -24,7 +24,7 @@ Deno.test("deserialize String primitive", () => {
 
 Deno.test("deserialize String object", () => {
   assertEquals(
-    decodeValue({ $type: "StringObject", value: "string" }),
+    decodeValue({ $type: "StringObject", $: "string" }),
     Object("string"),
   );
 });
@@ -38,7 +38,7 @@ Deno.test("deserialize Number primitive", () => {
 
 Deno.test("deserialize Number object", () => {
   assertEquals(
-    decodeValue({ $type: "NumberObject", value: 42 }),
+    decodeValue({ $type: "NumberObject", $: 42 }),
     Object(42),
   );
 });
@@ -71,14 +71,14 @@ Deno.test("deserialize -0", () => {
 
 Deno.test("deserialize BigInt", () => {
   assertEquals(
-    decodeValue({ $type: "BigInt", value: "9007199254740991" }),
+    decodeValue({ $type: "BigInt", $: "9007199254740991" }),
     BigInt(9007199254740991),
   );
 });
 
 Deno.test("deserialize BigInt object", () => {
   assertEquals(
-    decodeValue({ $type: "BigIntObject", value: "9007199254740991" }),
+    decodeValue({ $type: "BigIntObject", $: "9007199254740991" }),
     Object(BigInt(9007199254740991)),
   );
 });
@@ -86,7 +86,7 @@ Deno.test("deserialize BigInt object", () => {
 Deno.test("deserialize Date", () => {
   const date = new Date("2023-05-20T12:00:00Z");
   assertEquals(
-    decodeValue({ $type: "Date", value: date.getTime() }),
+    decodeValue({ $type: "Date", $: date.getTime() }),
     date,
   );
 });
@@ -94,7 +94,7 @@ Deno.test("deserialize Date", () => {
 Deno.test("deserialize Invalid Date", () => {
   const invalidDate = new Date("Invalid Date");
   assert(
-    Number.isNaN(decodeValue({ $type: "Date", value: "NaN" }).getTime()),
+    Number.isNaN(decodeValue({ $type: "Date", $: "NaN" }).getTime()),
   );
 });
 
@@ -102,7 +102,7 @@ Deno.test("deserialize Error", () => {
   const error = new Error("Test error");
   const serialized = {
     $type: "Error",
-    value: {
+    $: {
       name: "Error",
       message: "Test error",
       stack: error.stack,
@@ -121,7 +121,7 @@ Deno.test("deserialize Error", () => {
 Deno.test("deserialize Set", () => {
   const set = new Set([1, 2, 3]);
   assertEquals(
-    decodeValue({ $type: "Set", value: [1, 2, 3] }),
+    decodeValue({ $type: "Set", $: [1, 2, 3] }),
     set,
   );
 });
@@ -131,7 +131,7 @@ Deno.test("deserialize RegExp", () => {
   assertEquals(
     decodeValue({
       $type: "RegExp",
-      value: { source: "test", flags: "gi" },
+      $: { source: "test", flags: "gi" },
     }),
     regex,
   );
@@ -142,7 +142,7 @@ Deno.test("deserialize Map", () => {
   assertEquals(
     decodeValue({
       $type: "Map",
-      value: [["key1", "value1"], ["key2", "value2"]],
+      $: [["key1", "value1"], ["key2", "value2"]],
     }),
     map,
   );

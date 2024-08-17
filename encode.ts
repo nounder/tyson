@@ -1,8 +1,8 @@
 import Types from "./types.ts";
 import { isPlainObject, toJSONType } from "./utils.ts";
 
-type JSON = Primitive | Primitive[] | { [key: string]: JSON };
-type Primitive = null | boolean | number | string;
+type Json = JsonPrimitive | JsonPrimitive[] | { [key: string]: Json };
+type JsonPrimitive = null | boolean | number | string;
 
 type JSObject = Record<string, any>;
 

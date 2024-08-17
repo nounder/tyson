@@ -42,21 +42,17 @@ export default {
     test(x) {
       return toStringTag(x) === "Error";
     },
-    replace({
-      name,
-      message,
-      stack,
-    }) {
+    replace(x) {
       return {
-        name,
-        message,
-        stack,
+        name: x.name,
+        message: x.message,
+        stack: x.stack,
       };
     },
-    revive(obj) {
-      const e = new Error(obj.message);
-      e.name = obj.name;
-      e.stack = obj.stack;
+    revive(x) {
+      const e = new Error(x.message);
+      e.name = x.name;
+      e.stack = x.stack;
 
       return e;
     },
@@ -70,11 +66,10 @@ export default {
     },
     replace: String,
     revive(x) {
-      return new Object(BigInt(/** @type {string} */ (x)));
+      return new Object(BigInt(x));
     },
   },
 
-  // String Object (not primitive string which need no type spec)
   StringObject: {
     test(x) {
       return toStringTag(x) === "String" && typeof x === "object";
@@ -82,10 +77,9 @@ export default {
     replace: String,
     revive(x) {
       return new String(x);
-    }, // Revive to an objectified string
+    },
   },
 
-  // Boolean Object (not primitive boolean which need no type spec)
   BooleanObject: {
     test(x) {
       return toStringTag(x) === "Boolean" &&
@@ -93,12 +87,10 @@ export default {
     },
     replace: Boolean,
     revive(x) {
-      // Revive to an objectified Boolean
       return new Boolean(x);
     },
   },
 
-  // Number Object (not primitive number which need no type spec)
   NumberObject: {
     test(x) {
       return toStringTag(x) === "Number" && typeof x === "object";
@@ -106,7 +98,7 @@ export default {
     replace: Number,
     revive(n) {
       return new Number(n);
-    }, // Revive to an objectified number
+    },
   },
 
   Map: {
@@ -149,8 +141,8 @@ export default {
       };
     },
 
-    revive({ source, flags }) {
-      return new RegExp(source, flags);
+    revive(x) {
+      return new RegExp(x.source, x.flags);
     },
   },
 
@@ -159,7 +151,6 @@ export default {
       return Object.is(x, -0);
     },
     replace() {
-      // Just adding 0 here for minimized space; will still revive as -0
       return undefined;
     },
     revive() {

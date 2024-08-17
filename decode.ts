@@ -26,7 +26,7 @@ type EncodedJsonObject =
 // cannot have ref
 type EncodedDefinition =
   | JsonObject
-  | (JsonObject & { $type: string });
+  | (JsonObject & { ["$type"]: string; ["$"]?: JsonValue });
 
 type EncodedDefinitionMap = Record<string, EncodedDefinition>;
 
@@ -46,7 +46,7 @@ export function decodeValue(
     const typeSpec = Types[value.$type as string];
 
     if (typeSpec) {
-      const decodedValue = typeSpec.revive(value);
+      const decodedValue = typeSpec.revive(value.$);
 
       if (decodedValue !== undefined) {
         return decodedValue;
