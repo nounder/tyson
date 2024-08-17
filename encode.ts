@@ -1,18 +1,13 @@
-import Types from "./types.ts";
+import { JsObject } from "./types.ts";
+import Typeset from "./typesets/all.ts";
 import { isPlainObject, toJSONType } from "./utils.ts";
-
-type Json = JsonPrimitive | JsonPrimitive[] | { [key: string]: Json };
-type JsonPrimitive = null | boolean | number | string;
-
-type JSObject = Record<string, any>;
-
 type ObjectIds = WeakMap<object, string | null>;
 
 /**
  * Walk through the object and assign a unique identifier to each object
  * if it's referenced more than once. Used to detect circular references.
  */
-function identifyCircularObjects(src: JSObject, objectIds?: ObjectIds) {
+function identifyCircularObjects(src: JsObject, objectIds?: ObjectIds) {
   if (!objectIds) {
     objectIds = new WeakMap();
   }
@@ -42,8 +37,8 @@ function identifyCircularObjects(src: JSObject, objectIds?: ObjectIds) {
  * Replace objects with references to their unique identifiers.
  * Returns a id -> object mapping of all circular objects found in `objectIds`
  */
-function refObject(src: JSObject, dst: JSObject, objectIds?: ObjectIds) {
-  const defs = {} as Record<string, JSObject>;
+function refObject(src: JsObject, dst: JsObject, objectIds?: ObjectIds) {
+  const defs = {} as Record<string, JsObject>;
 
   for (const [k, v] of Object.entries(src)) {
     if (isPlainObject(v)) {
@@ -77,7 +72,7 @@ export function encodeValue(value: any) {
     return value;
   }
 
-  for (const [tag, spec] of Object.entries(Types)) {
+  for (const [tag, spec] of Object.entries(Typeset)) {
     if (spec.test(value)) {
       const replacedValue = spec.encode(value);
 

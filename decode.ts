@@ -1,29 +1,11 @@
-import Types from "./types.ts";
+import {
+  EncodedDefinitionMap,
+  EncodedDocument,
+  EncodedJsonObject,
+  JsonValue,
+} from "./types.ts";
+import Typeset from "./typesets/all.ts";
 import { isPlainObject } from "./utils.ts";
-
-type JsonPrimitive = null | boolean | number | string;
-type JsonValue = JsonPrimitive | JsonValue[] | JsonObject;
-type JsonObject = { [key: string]: JsonValue };
-
-type RefObject = { ["$ref"]: string };
-type TypedObject = { ["$type"]: string; ["$?"]: JsonValue };
-
-type EncodedJsonObject =
-  | JsonObject
-  | TypedObject
-  | RefObject;
-
-// cannot have ref
-type EncodedDefinition =
-  | JsonObject
-  | (JsonObject & TypedObject);
-
-type EncodedDefinitionMap = Record<string, EncodedDefinition>;
-
-// root object that may contain definitions
-type EncodedDocument =
-  | JsonObject
-  | (JsonObject & { $defs: EncodedDefinitionMap });
 
 export function decodeValue(
   value: JsonValue | EncodedJsonObject,
@@ -33,7 +15,7 @@ export function decodeValue(
     value !== null &&
     "$type" in value
   ) {
-    const typeSpec = Types[value.$type as string];
+    const typeSpec = Typeset[value.$type as string];
 
     if (typeSpec) {
       const decodedValue = typeSpec.decode(value["$"]);
