@@ -214,7 +214,7 @@ Deno.test("deserialize circular object", () => {
   };
   const deserialized = decodeClonedObject(serialized);
 
-  assert(deserialized.owner === deserialized.creator);
+  assertEquals(deserialized.owner, joe);
   assertEquals(deserialized.owner, joe);
 });
 

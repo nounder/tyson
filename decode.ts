@@ -5,8 +5,8 @@ type JsonPrimitive = null | boolean | number | string;
 type JsonValue = JsonPrimitive | JsonValue[] | JsonObject;
 type JsonObject = { [key: string]: JsonValue };
 
-type RefObject = { $ref: string };
-type TypedObject = { $type: string };
+type RefObject = { ["$ref"]: string };
+type TypedObject = { ["$type"]: string; ["$?"]: JsonValue };
 
 // JS types without functions and symbols
 type DecodableJsValue =
@@ -26,7 +26,7 @@ type EncodedJsonObject =
 // cannot have ref
 type EncodedDefinition =
   | JsonObject
-  | (JsonObject & { ["$type"]: string; ["$"]?: JsonValue });
+  | (JsonObject & TypedObject);
 
 type EncodedDefinitionMap = Record<string, EncodedDefinition>;
 
@@ -46,11 +46,9 @@ export function decodeValue(
     const typeSpec = Types[value.$type as string];
 
     if (typeSpec) {
-      const decodedValue = typeSpec.revive(value.$);
+      const decodedValue = typeSpec.revive(value["$"]);
 
-      if (decodedValue !== undefined) {
-        return decodedValue;
-      }
+      return decodedValue;
     } else {
       throw new Error(`Unknown type: ${value.$type}`);
     }
@@ -60,22 +58,16 @@ export function decodeValue(
 }
 
 export function decodeObject(target: EncodedDocument): void {
+  const { $defs, ...rest } = target;
+
   // First we have to deref defs
-  if (target.$defs) {
+  if ($defs) {
     derefDefs(target.$defs as EncodedDefinitionMap);
   }
 
-  for (const key in target) {
-    if (key === "$defs") {
-      continue;
-    }
+  derefObject(rest, (target.$defs as EncodedDefinitionMap) || {});
 
-    const value = target[key];
-
-    if (isPlainObject(value)) {
-      derefObject(value, (target.$defs as EncodedDefinitionMap) || {});
-    }
-  }
+  Object.assign(target, rest);
 }
 
 function derefDefs(defs: EncodedJsonObject): void {
@@ -98,7 +90,9 @@ function derefObject(
   target: EncodedJsonObject,
   defs: EncodedDefinitionMap,
 ): void {
-  for (const [k, v] of Object.entries(target)) {
+  for (const k in target) {
+    const v = target[k];
+
     if (isPlainObject(v)) {
       const $ref = v["$ref"] as string;
 
@@ -111,6 +105,7 @@ function derefObject(
 
         target[k] = refObj;
       } else {
+        // @ts-ignore all good. object is plain
         derefObject(v, defs);
       }
     }
