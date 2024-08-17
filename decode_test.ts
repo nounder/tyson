@@ -162,7 +162,7 @@ Deno.test("deserialize literals in object", () => {
     number: 1,
     string: "2",
   };
-  const deserialized = decodeObject(value);
+  const deserialized = decodeClonedObject(value);
 
   assertEquals(deserialized, value);
 });
@@ -171,7 +171,7 @@ Deno.test("deserialize flat array in object", () => {
   const value = {
     list: [1, 2, 3],
   };
-  const deserialized = decodeObject(value);
+  const deserialized = decodeClonedObject(value);
 
   assertEquals(deserialized, value);
 });
@@ -180,7 +180,7 @@ Deno.test("deserialize nested array in object", () => {
   const value = {
     list: [1, [2, 3], [4, 5, 6]],
   };
-  const deserialized = decodeObject(value);
+  const deserialized = decodeClonedObject(value);
 
   assertEquals(deserialized, value);
 });
@@ -192,7 +192,7 @@ Deno.test("deserialize nested object", () => {
       bindings: "vim",
     },
   };
-  const deserialized = decodeObject(value);
+  const deserialized = decodeClonedObject(value);
 
   assertEquals(deserialized, value);
 });
@@ -212,8 +212,16 @@ Deno.test("deserialize circular object", () => {
       $ref: "*1",
     },
   };
-  const deserialized = decodeObject(serialized);
+  const deserialized = decodeClonedObject(serialized);
 
   assert(deserialized.owner === deserialized.creator);
   assertEquals(deserialized.owner, joe);
 });
+
+function decodeClonedObject(obj) {
+  const clonedObject = structuredClone(obj);
+
+  decodeObject(clonedObject);
+
+  return clonedObject;
+}
