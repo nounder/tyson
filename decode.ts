@@ -8,16 +8,6 @@ type JsonObject = { [key: string]: JsonValue };
 type RefObject = { ["$ref"]: string };
 type TypedObject = { ["$type"]: string; ["$?"]: JsonValue };
 
-// JS types without functions and symbols
-type DecodableJsValue =
-  | undefined
-  | boolean
-  | number
-  | bigint
-  | string
-  | null
-  | { [key: string]: DecodableJsValue };
-
 type EncodedJsonObject =
   | JsonObject
   | TypedObject
@@ -46,7 +36,7 @@ export function decodeValue(
     const typeSpec = Types[value.$type as string];
 
     if (typeSpec) {
-      const decodedValue = typeSpec.revive(value["$"]);
+      const decodedValue = typeSpec.decode(value["$"]);
 
       return decodedValue;
     } else {

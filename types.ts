@@ -5,23 +5,23 @@ export default {
     test(x) {
       return x === undefined;
     },
-    replace: () => undefined,
-    revive: () => undefined,
+    encode: () => undefined,
+    decode: () => undefined,
   },
 
   BigInt: {
     test(x) {
       return typeof x === "bigint";
     },
-    replace: String,
-    revive: BigInt,
+    encode: String,
+    decode: BigInt,
   },
 
   Date: {
     test(x) {
       return toStringTag(x) === "Date";
     },
-    replace(x) {
+    encode(x) {
       const time = x.getTime();
 
       if (Number.isNaN(time)) {
@@ -30,7 +30,7 @@ export default {
 
       return time;
     },
-    revive(x) {
+    decode(x) {
       if (x === "NaN") {
         return new Date(Number.NaN);
       }
@@ -42,14 +42,14 @@ export default {
     test(x) {
       return toStringTag(x) === "Error";
     },
-    replace(x) {
+    encode(x) {
       return {
         name: x.name,
         message: x.message,
         stack: x.stack,
       };
     },
-    revive(x) {
+    decode(x) {
       const e = new Error(x.message);
       e.name = x.name;
       e.stack = x.stack;
@@ -64,8 +64,8 @@ export default {
         x?.constructor === BigInt &&
         typeof x.valueOf() === "bigint";
     },
-    replace: String,
-    revive(x) {
+    encode: String,
+    decode(x) {
       return new Object(BigInt(x));
     },
   },
@@ -74,8 +74,8 @@ export default {
     test(x) {
       return toStringTag(x) === "String" && typeof x === "object";
     },
-    replace: String,
-    revive(x) {
+    encode: String,
+    decode(x) {
       return new String(x);
     },
   },
@@ -85,8 +85,8 @@ export default {
       return toStringTag(x) === "Boolean" &&
         typeof x === "object";
     },
-    replace: Boolean,
-    revive(x) {
+    encode: Boolean,
+    decode(x) {
       return new Boolean(x);
     },
   },
@@ -95,8 +95,8 @@ export default {
     test(x) {
       return toStringTag(x) === "Number" && typeof x === "object";
     },
-    replace: Number,
-    revive(n) {
+    encode: Number,
+    decode(n) {
       return new Number(n);
     },
   },
@@ -105,10 +105,10 @@ export default {
     test(x) {
       return toStringTag(x) === "Map";
     },
-    replace(x) {
+    encode(x) {
       return [...x.entries()];
     },
-    revive(x) {
+    decode(x) {
       return new Map(x);
     },
   },
@@ -117,10 +117,10 @@ export default {
     test(x) {
       return toStringTag(x) === "Set";
     },
-    replace(x) {
+    encode(x) {
       return [...x.values()];
     },
-    revive(x) {
+    decode(x) {
       return new Set(x);
     },
   },
@@ -130,7 +130,7 @@ export default {
       return toStringTag(x) === "RegExp";
     },
 
-    replace(rexp) {
+    encode(rexp) {
       return {
         source: rexp.source,
         flags: (rexp.global ? "g" : "") +
@@ -141,7 +141,7 @@ export default {
       };
     },
 
-    revive(x) {
+    decode(x) {
       return new RegExp(x.source, x.flags);
     },
   },
@@ -150,10 +150,10 @@ export default {
     test(x) {
       return Object.is(x, -0);
     },
-    replace() {
+    encode() {
       return undefined;
     },
-    revive() {
+    decode() {
       return -0;
     },
   },
@@ -162,10 +162,10 @@ export default {
     test(x) {
       return x === Number.POSITIVE_INFINITY;
     },
-    replace() {
+    encode() {
       return undefined;
     },
-    revive() {
+    decode() {
       return Number.POSITIVE_INFINITY;
     },
   },
@@ -174,10 +174,10 @@ export default {
     test(x) {
       return x === Number.NEGATIVE_INFINITY;
     },
-    replace() {
+    encode() {
       return undefined;
     },
-    revive() {
+    decode() {
       return Number.NEGATIVE_INFINITY;
     },
   },
@@ -186,17 +186,17 @@ export default {
     test(x) {
       return Number.isNaN(x);
     },
-    replace() {
+    encode() {
       return undefined;
     },
-    revive() {
+    decode() {
       return Number.NaN;
     },
   },
 } as {
   [tag: string]: {
     test: (x: any) => boolean;
-    replace: (x: any) => any | undefined;
-    revive: (x: any) => any | undefined;
+    encode: (x: any) => any | undefined;
+    decode: (x: any) => any | undefined;
   };
 };

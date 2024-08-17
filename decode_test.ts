@@ -92,7 +92,6 @@ Deno.test("deserialize Date", () => {
 });
 
 Deno.test("deserialize Invalid Date", () => {
-  const invalidDate = new Date("Invalid Date");
   assert(
     Number.isNaN(decodeValue({ $type: "Date", $: "NaN" }).getTime()),
   );

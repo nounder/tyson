@@ -79,7 +79,7 @@ export function encodeValue(value: any) {
 
   for (const [tag, spec] of Object.entries(Types)) {
     if (spec.test(value)) {
-      const replacedValue = spec.replace(value);
+      const replacedValue = spec.encode(value);
 
       if (replacedValue === undefined) {
         return {
