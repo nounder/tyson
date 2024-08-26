@@ -107,6 +107,7 @@ Deno.test("deserialize Error", () => {
       stack: error.stack,
     },
   };
+  // @ts-ignore it's fine
   const deserialized = decodeValue(serialized);
 
   assertObjectMatch(deserialized, {
